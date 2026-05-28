@@ -51,6 +51,11 @@ export const locations = [
     verificationNotes: [],
     statusNotes: [
       "Location-specific inventory, pricing, and specialty storage should be confirmed live."
+    ],
+
+    sourceUrls: [
+      "https://www.betterselfstorage.com/locations",
+      "https://www.betterselfstorage.com/facility/better-self-storage---e-barton"
     ]
   },
 
@@ -106,6 +111,11 @@ export const locations = [
     verificationNotes: [],
     statusNotes: [
       "Location-specific inventory, pricing, and specialty storage should be confirmed live."
+    ],
+
+    sourceUrls: [
+      "https://www.betterselfstorage.com/locations",
+      "https://www.betterselfstorage.com/facility/better-self-storage---glenn-bailey"
     ]
   },
 
@@ -156,12 +166,18 @@ export const locations = [
       "e-sign lease"
     ],
 
+    knownUnitSizes: [],
     exceptions: [
       "Shares contact information with the other Polk Avenue location."
     ],
     verificationNotes: [],
     statusNotes: [
       "Be careful when customers say 'Polk' without a street number. Clarify which Polk location they mean."
+    ],
+
+    sourceUrls: [
+      "https://www.betterselfstorage.com/locations",
+      "https://www.betterselfstorage.com/facility/better-self-storage---polk-a"
     ]
   },
 
@@ -212,14 +228,20 @@ export const locations = [
       "e-sign lease"
     ],
 
+    knownUnitSizes: [],
     exceptions: [
       "Shares contact information with the other Polk Avenue location."
     ],
     verificationNotes: [
-      "You confirmed there are two Polk Avenue locations. Treat both as valid locations with shared contact information."
+      "There are two Polk Avenue locations with shared contact information."
     ],
     statusNotes: [
       "Be careful when customers say 'Polk' without a street number. Clarify which Polk location they mean."
+    ],
+
+    sourceUrls: [
+      "https://www.betterselfstorage.com/locations",
+      "https://www.betterselfstorage.com/facility/better-self-storage---polk-b"
     ]
   },
 
@@ -270,9 +292,15 @@ export const locations = [
       "e-sign lease"
     ],
 
+    knownUnitSizes: [],
     exceptions: [],
     verificationNotes: [],
-    statusNotes: []
+    statusNotes: [],
+
+    sourceUrls: [
+      "https://www.betterselfstorage.com/locations",
+      "https://www.betterselfstorage.com/facility/better-self-storage---s-1st-st"
+    ]
   },
 
   {
@@ -322,9 +350,15 @@ export const locations = [
       "e-sign lease"
     ],
 
+    knownUnitSizes: [],
     exceptions: [],
     verificationNotes: [],
-    statusNotes: []
+    statusNotes: [],
+
+    sourceUrls: [
+      "https://www.betterselfstorage.com/locations",
+      "https://www.betterselfstorage.com/facility/better-self-storage---woods-st"
+    ]
   },
 
   {
@@ -383,6 +417,11 @@ export const locations = [
     verificationNotes: [],
     statusNotes: [
       "Commercial leads here may need a longer sales cycle and human follow-up."
+    ],
+
+    sourceUrls: [
+      "https://www.betterselfstorage.com/locations",
+      "https://www.betterselfstorage.com/facility/pocatello-business-park-and-storage"
     ]
   },
 
@@ -446,6 +485,11 @@ export const locations = [
     verificationNotes: [],
     statusNotes: [
       "When a customer asks about 24-hour access, confirm whether they mean Topeka specifically."
+    ],
+
+    sourceUrls: [
+      "https://www.betterselfstorage.com/locations",
+      "https://www.betterselfstorage.com/facility/better-self-storage-topeka"
     ]
   },
 
@@ -501,6 +545,11 @@ export const locations = [
     verificationNotes: [],
     statusNotes: [
       "Customer review content exists for this site, but the agent should not quote review anecdotes as policy."
+    ],
+
+    sourceUrls: [
+      "https://www.betterselfstorage.com/locations",
+      "https://www.betterselfstorage.com/facility/kearns-discount-storage"
     ]
   },
 
@@ -551,9 +600,15 @@ export const locations = [
       "e-sign lease"
     ],
 
+    knownUnitSizes: [],
     exceptions: [],
     verificationNotes: [],
-    statusNotes: []
+    statusNotes: [],
+
+    sourceUrls: [
+      "https://www.betterselfstorage.com/washington",
+      "https://www.betterselfstorage.com/facility/ideal-mini-storage---dodge-st"
+    ]
   },
 
   {
@@ -603,9 +658,15 @@ export const locations = [
       "e-sign lease"
     ],
 
+    knownUnitSizes: [],
     exceptions: [],
     verificationNotes: [],
-    statusNotes: []
+    statusNotes: [],
+
+    sourceUrls: [
+      "https://www.betterselfstorage.com/washington",
+      "https://www.betterselfstorage.com/facility/ideal-mini-storage---van-giesen"
+    ]
   },
 
   {
@@ -655,9 +716,15 @@ export const locations = [
       "e-sign lease"
     ],
 
+    knownUnitSizes: [],
     exceptions: [],
     verificationNotes: [],
-    statusNotes: []
+    statusNotes: [],
+
+    sourceUrls: [
+      "https://www.betterselfstorage.com/wyoming",
+      "https://www.betterselfstorage.com/facility/aa-casper-storage---casper-view-ct"
+    ]
   },
 
   {
@@ -707,8 +774,14 @@ export const locations = [
       "e-sign lease"
     ],
 
+    knownUnitSizes: [],
     exceptions: [],
     verificationNotes: [],
-    statusNotes: []
+    statusNotes: [],
+
+    sourceUrls: [
+      "https://www.betterselfstorage.com/wyoming",
+      "https://www.betterselfstorage.com/facility/aa-casper-storage---s-melrose-st"
+    ]
   }
 ];
