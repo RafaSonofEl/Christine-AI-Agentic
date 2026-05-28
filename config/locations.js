@@ -1,3 +1,14 @@
+// Framework rule (self-storage-regional-operator):
+// sourceUrls is ALWAYS built in this fixed order:
+//   1. index    -> state or locations listing page
+//   2. facility -> the specific facility page
+//   3. exception-> any exception-specific page (optional, omit if none)
+// Use buildSourceUrls() so ordering is enforced, not remembered.
+
+function buildSourceUrls({ index, facility, exception = null }) {
+  return [index, facility, ...(exception ? [exception] : [])];
+}
+
 export const locations = [
   {
     id: "ar-west-memphis-e-barton",
@@ -12,51 +23,32 @@ export const locations = [
     address2: null,
     postalCode: "72301",
     phone: "(870) 735-7400",
-
     officeHours: {
       summary: "On-site hours may vary. Phone and online support are available 24/7.",
       onsite: "Mon-Fri 9:00 AM - 5:00 PM, Sat-Sun Closed",
       support: "24/7 phone and online support"
     },
-
     accessHours: {
       summary: "5:00 AM - 10:00 PM daily",
       gate: "5:00 AM - 10:00 PM daily",
       exception: null
     },
-
     offerings: {
-      selfStorage: true,
-      businessStorage: true,
-      vehicleStorage: false,
-      rvStorage: false,
-      boatStorage: false,
-      coveredParking: false,
-      commercialWarehouse: false,
-      officeSpace: false
+      selfStorage: true, businessStorage: true, vehicleStorage: false, rvStorage: false,
+      boatStorage: false, coveredParking: false, commercialWarehouse: false, officeSpace: false
     },
-
     amenities: [
-      "24/7 video surveillance",
-      "controlled gated entry",
-      "bright lighting",
-      "after-hours monitoring",
-      "month-to-month lease",
-      "online rental",
-      "e-sign lease"
+      "24/7 video surveillance", "controlled gated entry", "bright lighting",
+      "after-hours monitoring", "month-to-month lease", "online rental", "e-sign lease"
     ],
-
     knownUnitSizes: [],
     exceptions: [],
     verificationNotes: [],
-    statusNotes: [
-      "Location-specific inventory, pricing, and specialty storage should be confirmed live."
-    ],
-
-    sourceUrls: [
-      "https://www.betterselfstorage.com/locations",
-      "https://www.betterselfstorage.com/facility/better-self-storage---e-barton"
-    ]
+    statusNotes: ["Location-specific inventory, pricing, and specialty storage should be confirmed live."],
+    sourceUrls: buildSourceUrls({
+      index: "https://www.betterselfstorage.com/locations",
+      facility: "https://www.betterselfstorage.com/facility/better-self-storage---e-barton"
+    })
   },
 
   {
@@ -72,51 +64,32 @@ export const locations = [
     address2: null,
     postalCode: "72301",
     phone: "(870) 735-7400",
-
     officeHours: {
       summary: "On-site hours may vary. Phone and online support are available 24/7.",
       onsite: "Mon-Fri 9:00 AM - 5:00 PM, Sat-Sun Closed",
       support: "24/7 phone and online support"
     },
-
     accessHours: {
       summary: "5:00 AM - 10:00 PM daily",
       gate: "5:00 AM - 10:00 PM daily",
       exception: null
     },
-
     offerings: {
-      selfStorage: true,
-      businessStorage: true,
-      vehicleStorage: false,
-      rvStorage: false,
-      boatStorage: false,
-      coveredParking: false,
-      commercialWarehouse: false,
-      officeSpace: false
+      selfStorage: true, businessStorage: true, vehicleStorage: false, rvStorage: false,
+      boatStorage: false, coveredParking: false, commercialWarehouse: false, officeSpace: false
     },
-
     amenities: [
-      "24/7 video surveillance",
-      "controlled gated entry",
-      "bright lighting",
-      "after-hours monitoring",
-      "month-to-month lease",
-      "online rental",
-      "e-sign lease"
+      "24/7 video surveillance", "controlled gated entry", "bright lighting",
+      "after-hours monitoring", "month-to-month lease", "online rental", "e-sign lease"
     ],
-
     knownUnitSizes: [],
     exceptions: [],
     verificationNotes: [],
-    statusNotes: [
-      "Location-specific inventory, pricing, and specialty storage should be confirmed live."
-    ],
-
-    sourceUrls: [
-      "https://www.betterselfstorage.com/locations",
-      "https://www.betterselfstorage.com/facility/better-self-storage---glenn-bailey"
-    ]
+    statusNotes: ["Location-specific inventory, pricing, and specialty storage should be confirmed live."],
+    sourceUrls: buildSourceUrls({
+      index: "https://www.betterselfstorage.com/locations",
+      facility: "https://www.betterselfstorage.com/facility/better-self-storage---glenn-bailey"
+    })
   },
 
   {
@@ -132,53 +105,32 @@ export const locations = [
     address2: null,
     postalCode: "72301",
     phone: "(870) 394-9480",
-
     officeHours: {
       summary: "On-site hours may vary. Phone and online support are available 24/7.",
       onsite: "Mon-Fri 9:00 AM - 5:00 PM, Sat-Sun Closed",
       support: "24/7 phone and online support"
     },
-
     accessHours: {
       summary: "5:00 AM - 10:00 PM daily",
       gate: "5:00 AM - 10:00 PM daily",
       exception: null
     },
-
     offerings: {
-      selfStorage: true,
-      businessStorage: true,
-      vehicleStorage: false,
-      rvStorage: false,
-      boatStorage: false,
-      coveredParking: false,
-      commercialWarehouse: false,
-      officeSpace: false
+      selfStorage: true, businessStorage: true, vehicleStorage: false, rvStorage: false,
+      boatStorage: false, coveredParking: false, commercialWarehouse: false, officeSpace: false
     },
-
     amenities: [
-      "24/7 video surveillance",
-      "controlled gated entry",
-      "bright lighting",
-      "after-hours monitoring",
-      "month-to-month lease",
-      "online rental",
-      "e-sign lease"
+      "24/7 video surveillance", "controlled gated entry", "bright lighting",
+      "after-hours monitoring", "month-to-month lease", "online rental", "e-sign lease"
     ],
-
     knownUnitSizes: [],
-    exceptions: [
-      "Shares contact information with the other Polk Avenue location."
-    ],
+    exceptions: ["Shares contact information with the other Polk Avenue location."],
     verificationNotes: [],
-    statusNotes: [
-      "Be careful when customers say 'Polk' without a street number. Clarify which Polk location they mean."
-    ],
-
-    sourceUrls: [
-      "https://www.betterselfstorage.com/locations",
-      "https://www.betterselfstorage.com/facility/better-self-storage---polk-a"
-    ]
+    statusNotes: ["Be careful when customers say 'Polk' without a street number. Clarify which Polk location they mean."],
+    sourceUrls: buildSourceUrls({
+      index: "https://www.betterselfstorage.com/locations",
+      facility: "https://www.betterselfstorage.com/facility/better-self-storage---polk-a"
+    })
   },
 
   {
@@ -194,55 +146,32 @@ export const locations = [
     address2: null,
     postalCode: "72301",
     phone: "(870) 394-9480",
-
     officeHours: {
       summary: "On-site hours may vary. Phone and online support are available 24/7.",
       onsite: "Mon-Fri 9:00 AM - 5:00 PM, Sat-Sun Closed",
       support: "24/7 phone and online support"
     },
-
     accessHours: {
       summary: "5:00 AM - 10:00 PM daily",
       gate: "5:00 AM - 10:00 PM daily",
       exception: null
     },
-
     offerings: {
-      selfStorage: true,
-      businessStorage: true,
-      vehicleStorage: false,
-      rvStorage: false,
-      boatStorage: false,
-      coveredParking: false,
-      commercialWarehouse: false,
-      officeSpace: false
+      selfStorage: true, businessStorage: true, vehicleStorage: false, rvStorage: false,
+      boatStorage: false, coveredParking: false, commercialWarehouse: false, officeSpace: false
     },
-
     amenities: [
-      "24/7 video surveillance",
-      "controlled gated entry",
-      "bright lighting",
-      "after-hours monitoring",
-      "month-to-month lease",
-      "online rental",
-      "e-sign lease"
+      "24/7 video surveillance", "controlled gated entry", "bright lighting",
+      "after-hours monitoring", "month-to-month lease", "online rental", "e-sign lease"
     ],
-
     knownUnitSizes: [],
-    exceptions: [
-      "Shares contact information with the other Polk Avenue location."
-    ],
-    verificationNotes: [
-      "There are two Polk Avenue locations with shared contact information."
-    ],
-    statusNotes: [
-      "Be careful when customers say 'Polk' without a street number. Clarify which Polk location they mean."
-    ],
-
-    sourceUrls: [
-      "https://www.betterselfstorage.com/locations",
-      "https://www.betterselfstorage.com/facility/better-self-storage---polk-b"
-    ]
+    exceptions: ["Shares contact information with the other Polk Avenue location."],
+    verificationNotes: ["There are two Polk Avenue locations with shared contact information."],
+    statusNotes: ["Be careful when customers say 'Polk' without a street number. Clarify which Polk location they mean."],
+    sourceUrls: buildSourceUrls({
+      index: "https://www.betterselfstorage.com/locations",
+      facility: "https://www.betterselfstorage.com/facility/better-self-storage---polk-b"
+    })
   },
 
   {
@@ -258,49 +187,32 @@ export const locations = [
     address2: null,
     postalCode: "72301",
     phone: "(870) 394-9480",
-
     officeHours: {
       summary: "On-site hours may vary. Phone and online support are available 24/7.",
       onsite: "Mon-Fri 9:00 AM - 5:00 PM, Sat-Sun Closed",
       support: "24/7 phone and online support"
     },
-
     accessHours: {
       summary: "5:00 AM - 10:00 PM daily",
       gate: "5:00 AM - 10:00 PM daily",
       exception: null
     },
-
     offerings: {
-      selfStorage: true,
-      businessStorage: true,
-      vehicleStorage: false,
-      rvStorage: false,
-      boatStorage: false,
-      coveredParking: false,
-      commercialWarehouse: false,
-      officeSpace: false
+      selfStorage: true, businessStorage: true, vehicleStorage: false, rvStorage: false,
+      boatStorage: false, coveredParking: false, commercialWarehouse: false, officeSpace: false
     },
-
     amenities: [
-      "24/7 video surveillance",
-      "controlled gated entry",
-      "bright lighting",
-      "after-hours monitoring",
-      "month-to-month lease",
-      "online rental",
-      "e-sign lease"
+      "24/7 video surveillance", "controlled gated entry", "bright lighting",
+      "after-hours monitoring", "month-to-month lease", "online rental", "e-sign lease"
     ],
-
     knownUnitSizes: [],
     exceptions: [],
     verificationNotes: [],
     statusNotes: [],
-
-    sourceUrls: [
-      "https://www.betterselfstorage.com/locations",
-      "https://www.betterselfstorage.com/facility/better-self-storage---s-1st-st"
-    ]
+    sourceUrls: buildSourceUrls({
+      index: "https://www.betterselfstorage.com/locations",
+      facility: "https://www.betterselfstorage.com/facility/better-self-storage---s-1st-st"
+    })
   },
 
   {
@@ -316,49 +228,32 @@ export const locations = [
     address2: null,
     postalCode: "72301",
     phone: "(870) 394-9480",
-
     officeHours: {
       summary: "On-site hours may vary. Phone and online support are available 24/7.",
       onsite: "Mon-Fri 9:00 AM - 5:00 PM, Sat-Sun Closed",
       support: "24/7 phone and online support"
     },
-
     accessHours: {
       summary: "5:00 AM - 10:00 PM daily",
       gate: "5:00 AM - 10:00 PM daily",
       exception: null
     },
-
     offerings: {
-      selfStorage: true,
-      businessStorage: true,
-      vehicleStorage: false,
-      rvStorage: false,
-      boatStorage: false,
-      coveredParking: false,
-      commercialWarehouse: false,
-      officeSpace: false
+      selfStorage: true, businessStorage: true, vehicleStorage: false, rvStorage: false,
+      boatStorage: false, coveredParking: false, commercialWarehouse: false, officeSpace: false
     },
-
     amenities: [
-      "24/7 video surveillance",
-      "controlled gated entry",
-      "bright lighting",
-      "after-hours monitoring",
-      "month-to-month lease",
-      "online rental",
-      "e-sign lease"
+      "24/7 video surveillance", "controlled gated entry", "bright lighting",
+      "after-hours monitoring", "month-to-month lease", "online rental", "e-sign lease"
     ],
-
     knownUnitSizes: [],
     exceptions: [],
     verificationNotes: [],
     statusNotes: [],
-
-    sourceUrls: [
-      "https://www.betterselfstorage.com/locations",
-      "https://www.betterselfstorage.com/facility/better-self-storage---woods-st"
-    ]
+    sourceUrls: buildSourceUrls({
+      index: "https://www.betterselfstorage.com/locations",
+      facility: "https://www.betterselfstorage.com/facility/better-self-storage---woods-st"
+    })
   },
 
   {
@@ -374,55 +269,33 @@ export const locations = [
     address2: null,
     postalCode: "83201",
     phone: "(208) 417-7131",
-
     officeHours: {
       summary: "Mon-Fri 9:00 AM - 5:00 PM, Sat-Sun Closed, plus 24/7 phone and online support",
       onsite: "Mon-Fri 9:00 AM - 5:00 PM, Sat-Sun Closed",
       support: "24/7 phone and online support"
     },
-
     accessHours: {
       summary: "5:00 AM - 10:00 PM daily",
       gate: "5:00 AM - 10:00 PM daily",
       exception: null
     },
-
     offerings: {
-      selfStorage: true,
-      businessStorage: true,
-      vehicleStorage: true,
-      rvStorage: true,
-      boatStorage: false,
-      coveredParking: false,
-      commercialWarehouse: true,
-      officeSpace: true
+      selfStorage: true, businessStorage: true, vehicleStorage: true, rvStorage: true,
+      boatStorage: false, coveredParking: false, commercialWarehouse: true, officeSpace: true
     },
-
     amenities: [
-      "24/7 video surveillance",
-      "controlled gated entry",
-      "bright lighting",
-      "after-hours monitoring",
-      "month-to-month lease",
-      "online rental",
-      "e-sign lease",
-      "commercial warehouse space",
-      "office space"
+      "24/7 video surveillance", "controlled gated entry", "bright lighting",
+      "after-hours monitoring", "month-to-month lease", "online rental", "e-sign lease",
+      "commercial warehouse space", "office space"
     ],
-
     knownUnitSizes: [],
-    exceptions: [
-      "This is the operator's clearest commercial warehouse and office space location."
-    ],
+    exceptions: ["This is the operator's clearest commercial warehouse and office space location."],
     verificationNotes: [],
-    statusNotes: [
-      "Commercial leads here may need a longer sales cycle and human follow-up."
-    ],
-
-    sourceUrls: [
-      "https://www.betterselfstorage.com/locations",
-      "https://www.betterselfstorage.com/facility/pocatello-business-park-and-storage"
-    ]
+    statusNotes: ["Commercial leads here may need a longer sales cycle and human follow-up."],
+    sourceUrls: buildSourceUrls({
+      index: "https://www.betterselfstorage.com/locations",
+      facility: "https://www.betterselfstorage.com/facility/pocatello-business-park-and-storage"
+    })
   },
 
   {
@@ -438,59 +311,36 @@ export const locations = [
     address2: null,
     postalCode: "66616",
     phone: "(785) 329-9852",
-
     officeHours: {
       summary: "Mon-Fri 9:00 AM - 5:00 PM, Sat-Sun Closed, plus 24/7 phone and online support",
       onsite: "Mon-Fri 9:00 AM - 5:00 PM, Sat-Sun Closed",
       support: "24/7 phone and online support"
     },
-
     accessHours: {
       summary: "24-hour gate access",
       gate: "24 hours daily",
       exception: "Topeka is the published exception to the operator's usual 5:00 AM - 10:00 PM access pattern."
     },
-
     offerings: {
-      selfStorage: true,
-      businessStorage: true,
-      vehicleStorage: true,
-      rvStorage: true,
-      boatStorage: true,
-      coveredParking: true,
-      commercialWarehouse: false,
-      officeSpace: false
+      selfStorage: true, businessStorage: true, vehicleStorage: true, rvStorage: true,
+      boatStorage: true, coveredParking: true, commercialWarehouse: false, officeSpace: false
     },
-
     amenities: [
-      "24/7 video surveillance",
-      "controlled gated entry",
-      "bright lighting",
-      "after-hours monitoring",
-      "month-to-month lease",
-      "online rental",
-      "e-sign lease",
-      "covered parking",
-      "RV storage",
-      "camper storage",
-      "trailer storage",
-      "vehicle storage"
+      "24/7 video surveillance", "controlled gated entry", "bright lighting",
+      "after-hours monitoring", "month-to-month lease", "online rental", "e-sign lease",
+      "covered parking", "RV storage", "camper storage", "trailer storage", "vehicle storage"
     ],
-
     knownUnitSizes: [],
     exceptions: [
       "Only published location with 24-hour access.",
       "Markets RV, camper, trailer, and vehicle covered parking."
     ],
     verificationNotes: [],
-    statusNotes: [
-      "When a customer asks about 24-hour access, confirm whether they mean Topeka specifically."
-    ],
-
-    sourceUrls: [
-      "https://www.betterselfstorage.com/locations",
-      "https://www.betterselfstorage.com/facility/better-self-storage-topeka"
-    ]
+    statusNotes: ["When a customer asks about 24-hour access, confirm whether they mean Topeka specifically."],
+    sourceUrls: buildSourceUrls({
+      index: "https://www.betterselfstorage.com/locations",
+      facility: "https://www.betterselfstorage.com/facility/better-self-storage-topeka"
+    })
   },
 
   {
@@ -506,51 +356,32 @@ export const locations = [
     address2: null,
     postalCode: "84118",
     phone: "(801) 613-2404",
-
     officeHours: {
       summary: "Mon-Fri 9:00 AM - 5:00 PM, Sat-Sun Closed, plus 24/7 phone and online support",
       onsite: "Mon-Fri 9:00 AM - 5:00 PM, Sat-Sun Closed",
       support: "24/7 phone and online support"
     },
-
     accessHours: {
       summary: "5:00 AM - 10:00 PM daily",
       gate: "5:00 AM - 10:00 PM daily",
       exception: null
     },
-
     offerings: {
-      selfStorage: true,
-      businessStorage: true,
-      vehicleStorage: true,
-      rvStorage: false,
-      boatStorage: false,
-      coveredParking: false,
-      commercialWarehouse: false,
-      officeSpace: false
+      selfStorage: true, businessStorage: true, vehicleStorage: true, rvStorage: false,
+      boatStorage: false, coveredParking: false, commercialWarehouse: false, officeSpace: false
     },
-
     amenities: [
-      "24/7 video surveillance",
-      "controlled gated entry",
-      "bright lighting",
-      "after-hours monitoring",
-      "month-to-month lease",
-      "online rental",
-      "e-sign lease"
+      "24/7 video surveillance", "controlled gated entry", "bright lighting",
+      "after-hours monitoring", "month-to-month lease", "online rental", "e-sign lease"
     ],
-
     knownUnitSizes: [],
     exceptions: [],
     verificationNotes: [],
-    statusNotes: [
-      "Customer review content exists for this site, but the agent should not quote review anecdotes as policy."
-    ],
-
-    sourceUrls: [
-      "https://www.betterselfstorage.com/locations",
-      "https://www.betterselfstorage.com/facility/kearns-discount-storage"
-    ]
+    statusNotes: ["Customer review content exists for this site, but the agent should not quote review anecdotes as policy."],
+    sourceUrls: buildSourceUrls({
+      index: "https://www.betterselfstorage.com/locations",
+      facility: "https://www.betterselfstorage.com/facility/kearns-discount-storage"
+    })
   },
 
   {
@@ -566,49 +397,32 @@ export const locations = [
     address2: null,
     postalCode: null,
     phone: "(509) 903-9032",
-
     officeHours: {
       summary: "On-site hours may vary. Phone and online support are available 24/7.",
       onsite: "Mon-Fri 9:00 AM - 5:00 PM, Sat-Sun Closed",
       support: "24/7 phone and online support"
     },
-
     accessHours: {
       summary: "5:00 AM - 10:00 PM daily",
       gate: "5:00 AM - 10:00 PM daily",
       exception: null
     },
-
     offerings: {
-      selfStorage: true,
-      businessStorage: true,
-      vehicleStorage: false,
-      rvStorage: false,
-      boatStorage: false,
-      coveredParking: false,
-      commercialWarehouse: false,
-      officeSpace: false
+      selfStorage: true, businessStorage: true, vehicleStorage: false, rvStorage: false,
+      boatStorage: false, coveredParking: false, commercialWarehouse: false, officeSpace: false
     },
-
     amenities: [
-      "24/7 video surveillance",
-      "controlled gated entry",
-      "bright lighting",
-      "after-hours monitoring",
-      "month-to-month lease",
-      "online rental",
-      "e-sign lease"
+      "24/7 video surveillance", "controlled gated entry", "bright lighting",
+      "after-hours monitoring", "month-to-month lease", "online rental", "e-sign lease"
     ],
-
     knownUnitSizes: [],
     exceptions: [],
     verificationNotes: [],
     statusNotes: [],
-
-    sourceUrls: [
-      "https://www.betterselfstorage.com/washington",
-      "https://www.betterselfstorage.com/facility/ideal-mini-storage---dodge-st"
-    ]
+    sourceUrls: buildSourceUrls({
+      index: "https://www.betterselfstorage.com/washington",
+      facility: "https://www.betterselfstorage.com/facility/ideal-mini-storage---dodge-st"
+    })
   },
 
   {
@@ -624,49 +438,32 @@ export const locations = [
     address2: null,
     postalCode: null,
     phone: "(509) 903-9032",
-
     officeHours: {
       summary: "On-site hours may vary. Phone and online support are available 24/7.",
       onsite: "Mon-Fri 9:00 AM - 5:00 PM, Sat-Sun Closed",
       support: "24/7 phone and online support"
     },
-
     accessHours: {
       summary: "5:00 AM - 10:00 PM daily",
       gate: "5:00 AM - 10:00 PM daily",
       exception: null
     },
-
     offerings: {
-      selfStorage: true,
-      businessStorage: true,
-      vehicleStorage: false,
-      rvStorage: false,
-      boatStorage: false,
-      coveredParking: false,
-      commercialWarehouse: false,
-      officeSpace: false
+      selfStorage: true, businessStorage: true, vehicleStorage: false, rvStorage: false,
+      boatStorage: false, coveredParking: false, commercialWarehouse: false, officeSpace: false
     },
-
     amenities: [
-      "24/7 video surveillance",
-      "controlled gated entry",
-      "bright lighting",
-      "after-hours monitoring",
-      "month-to-month lease",
-      "online rental",
-      "e-sign lease"
+      "24/7 video surveillance", "controlled gated entry", "bright lighting",
+      "after-hours monitoring", "month-to-month lease", "online rental", "e-sign lease"
     ],
-
     knownUnitSizes: [],
     exceptions: [],
     verificationNotes: [],
     statusNotes: [],
-
-    sourceUrls: [
-      "https://www.betterselfstorage.com/washington",
-      "https://www.betterselfstorage.com/facility/ideal-mini-storage---van-giesen"
-    ]
+    sourceUrls: buildSourceUrls({
+      index: "https://www.betterselfstorage.com/washington",
+      facility: "https://www.betterselfstorage.com/facility/ideal-mini-storage---van-giesen"
+    })
   },
 
   {
@@ -682,49 +479,32 @@ export const locations = [
     address2: null,
     postalCode: "82601",
     phone: "(307) 224-4475",
-
     officeHours: {
       summary: "On-site hours may vary. Phone and online support are available 24/7.",
       onsite: "Mon-Fri 9:00 AM - 5:00 PM, Sat-Sun Closed",
       support: "24/7 phone and online support"
     },
-
     accessHours: {
       summary: "5:00 AM - 10:00 PM daily",
       gate: "5:00 AM - 10:00 PM daily",
       exception: null
     },
-
     offerings: {
-      selfStorage: true,
-      businessStorage: true,
-      vehicleStorage: false,
-      rvStorage: false,
-      boatStorage: false,
-      coveredParking: false,
-      commercialWarehouse: false,
-      officeSpace: false
+      selfStorage: true, businessStorage: true, vehicleStorage: false, rvStorage: false,
+      boatStorage: false, coveredParking: false, commercialWarehouse: false, officeSpace: false
     },
-
     amenities: [
-      "24/7 video surveillance",
-      "controlled gated entry",
-      "bright lighting",
-      "after-hours monitoring",
-      "month-to-month lease",
-      "online rental",
-      "e-sign lease"
+      "24/7 video surveillance", "controlled gated entry", "bright lighting",
+      "after-hours monitoring", "month-to-month lease", "online rental", "e-sign lease"
     ],
-
     knownUnitSizes: [],
     exceptions: [],
     verificationNotes: [],
     statusNotes: [],
-
-    sourceUrls: [
-      "https://www.betterselfstorage.com/wyoming",
-      "https://www.betterselfstorage.com/facility/aa-casper-storage---casper-view-ct"
-    ]
+    sourceUrls: buildSourceUrls({
+      index: "https://www.betterselfstorage.com/wyoming",
+      facility: "https://www.betterselfstorage.com/facility/aa-casper-storage---casper-view-ct"
+    })
   },
 
   {
@@ -740,48 +520,31 @@ export const locations = [
     address2: null,
     postalCode: "82601",
     phone: "(307) 224-4475",
-
     officeHours: {
       summary: "On-site hours may vary. Phone and online support are available 24/7.",
       onsite: "Mon-Fri 9:00 AM - 5:00 PM, Sat-Sun Closed",
       support: "24/7 phone and online support"
     },
-
     accessHours: {
       summary: "5:00 AM - 10:00 PM daily",
       gate: "5:00 AM - 10:00 PM daily",
       exception: null
     },
-
     offerings: {
-      selfStorage: true,
-      businessStorage: true,
-      vehicleStorage: false,
-      rvStorage: false,
-      boatStorage: false,
-      coveredParking: false,
-      commercialWarehouse: false,
-      officeSpace: false
+      selfStorage: true, businessStorage: true, vehicleStorage: false, rvStorage: false,
+      boatStorage: false, coveredParking: false, commercialWarehouse: false, officeSpace: false
     },
-
     amenities: [
-      "24/7 video surveillance",
-      "controlled gated entry",
-      "bright lighting",
-      "after-hours monitoring",
-      "month-to-month lease",
-      "online rental",
-      "e-sign lease"
+      "24/7 video surveillance", "controlled gated entry", "bright lighting",
+      "after-hours monitoring", "month-to-month lease", "online rental", "e-sign lease"
     ],
-
     knownUnitSizes: [],
     exceptions: [],
     verificationNotes: [],
     statusNotes: [],
-
-    sourceUrls: [
-      "https://www.betterselfstorage.com/wyoming",
-      "https://www.betterselfstorage.com/facility/aa-casper-storage---s-melrose-st"
-    ]
+    sourceUrls: buildSourceUrls({
+      index: "https://www.betterselfstorage.com/wyoming",
+      facility: "https://www.betterselfstorage.com/facility/aa-casper-storage---s-melrose-st"
+    })
   }
 ];
