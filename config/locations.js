@@ -1,3 +1,11 @@
+// Scalable and templatized: 
+// 1. buildSourceUrls() enforces the index, then facility, then exception order in code so that a new operator cannot produce an inconsistent
+// array. Ordering is a guarantee
+// 2. Every record has the identical key set, including knownUnitSizes and sourceUrls so that the lookup tool can trust the schema
+// without null-checking the keys.
+// 3. the comment block at the top is the contract. When the next operator is stamped into this vertical, this header travels with the file
+// and tells the next person who populates it how to fill sourceUrls.
+
 // Framework rule (self-storage-regional-operator):
 // sourceUrls is ALWAYS built in this fixed order:
 //   1. index    -> state or locations listing page
