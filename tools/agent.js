@@ -15,7 +15,7 @@ import {
   executeLookupLocationData
 } from "./tools/lookup_location_data.js";
 
-const API_KEY = "REPLACE_WITH_KEY"; // low spend cap; production uses a backend proxy
+const API_URL = "https://christine-proxy.prods-balustre-0h.workers.dev"; // your Worker URL
 const MODEL = "claude-haiku-4-5-20251001";
 const MAX_TOKENS = 600;
 const API_URL = "https://api.anthropic.com/v1/messages";
@@ -49,10 +49,8 @@ async function callAnthropic(messages) {
   const res = await fetch(API_URL, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
-      "x-api-key": API_KEY,
+      "Content-Type": "application/json", 
       "anthropic-version": "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true"
     },
     body: JSON.stringify({
       model: MODEL,
