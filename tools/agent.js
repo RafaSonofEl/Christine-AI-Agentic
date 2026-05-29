@@ -1,11 +1,11 @@
 // Framework: self-storage-regional-operator
 // Integration layer. Compiles the system prompt at init, runs the Anthropic
-// Messages API with tool use, resolves the location lookup loop, then extracts
-// the routing tag and dispatches the tool/action layer.
+// Messages API with tool use (via a Cloudflare Worker proxy), resolves the
+// location lookup loop, then extracts the routing tag and dispatches the
+// tool/action layer.
 //
-// Honest framing: real Claude-powered agent, simulated tool/action layer,
-// production-ready integration path. The API key here uses a low spend cap;
-// production proxies this through a backend.
+// The Anthropic API key is NOT in this file. It lives as an encrypted secret
+// in the Cloudflare Worker. This file only knows the Worker URL.
 
 import { compilePrompt } from "./framework/compilePrompt.js";
 import { extractRouting } from "./framework/routing.js";
@@ -15,10 +15,9 @@ import {
   executeLookupLocationData
 } from "./tools/lookup_location_data.js";
 
-const API_URL = "https://christine-proxy.prods-balustre-0h.workers.dev"; // your Worker URL
+const API_URL = "https://christine-proxy.prods-balustre-0h.workers.dev";
 const MODEL = "claude-haiku-4-5-20251001";
 const MAX_TOKENS = 600;
-const API_URL = "https://api.anthropic.com/v1/messages";
 const MAX_TOOL_HOPS = 4; // safety cap on tool-use round trips per turn
 
 // Compiled once at module load. Promotions are evaluated at compile time;
@@ -49,8 +48,8 @@ async function callAnthropic(messages) {
   const res = await fetch(API_URL, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json", 
-      "anthropic-version": "2023-06-01",
+      "Content-Type": "application/json",
+      "anthropic-version": "2023-06-01"
     },
     body: JSON.stringify({
       model: MODEL,
