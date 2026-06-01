@@ -12,13 +12,9 @@ import { extractRouting } from "./framework/routing.js";
 import { runToolsForRouting } from "./framework/dispatcher.js";
 import {
   lookupLocationDataTool,
-  executeLookupLocationData
-} from "./tools/lookup_location_data.js";
-import {
-  lookupLocationDataTool,
   executeLookupLocationData,
-  checkUnitAvailabilityTool,        // ← must exist
-  executeCheckUnitAvailability      // ← must exist
+  checkUnitAvailabilityTool,
+  executeCheckUnitAvailability
 } from "./tools/cubby_adapter.js";
 
 const API_URL = "https://christine-proxy.prods-balustre-0h.workers.dev";
