@@ -14,6 +14,12 @@ import {
   lookupLocationDataTool,
   executeLookupLocationData
 } from "./tools/lookup_location_data.js";
+import {
+  lookupLocationDataTool,
+  executeLookupLocationData,
+  checkUnitAvailabilityTool,        // ← must exist
+  executeCheckUnitAvailability      // ← must exist
+} from "./tools/cubby_adapter.js";
 
 const API_URL = "https://christine-proxy.prods-balustre-0h.workers.dev";
 const MODEL = "claude-haiku-4-5-20251001";
@@ -25,11 +31,12 @@ const MAX_TOOL_HOPS = 4; // safety cap on tool-use round trips per turn
 // again and pass the result into createAgent.
 const SYSTEM_PROMPT = compilePrompt();
 
-const TOOLS = [lookupLocationDataTool];
+const TOOLS = [lookupLocationDataTool, checkUnitAvailabilityTool];
 
 // Maps a tool name to its executor. Add tools here as the framework grows.
 const TOOL_EXECUTORS = {
-  lookup_location_data: executeLookupLocationData
+  lookup_location_data: executeLookupLocationData,
+  check_unit_availability: executeCheckUnitAvailability
 };
 
 function executeTool(toolUse) {
