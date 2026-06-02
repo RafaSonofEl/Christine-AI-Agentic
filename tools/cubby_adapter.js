@@ -109,12 +109,27 @@ const STATE_NAME_TO_CODE = {
 
 function normalizeStateInput(raw) {
   if (!raw) return null;
-  const v = raw.toLowerCase().trim();
+  // Strip non-letters except spaces, lowercase, collapse whitespace
+  let v = String(raw).toLowerCase().replace(/[^a-z\s]/g, "").trim().replace(/\s+/g, " ");
+  if (!v) return null;
+
+  // Direct two-letter
   if (v.length === 2) return v.toUpperCase();
+
+  // Direct full-name match
   if (STATE_NAME_TO_CODE[v]) return STATE_NAME_TO_CODE[v];
-  // Tolerate "ut." or "wash." style abbreviations by trimming punctuation
-  const stripped = v.replace(/[.\s]+$/g, "");
-  if (stripped.length === 2) return stripped.toUpperCase();
+
+  // Strip common prefixes Haiku might attach: "in wyoming", "the state of utah"
+  const stripped = v
+    .replace(/^(in|the state of|state of|near)\s+/, "")
+    .trim();
+  if (STATE_NAME_TO_CODE[stripped]) return STATE_NAME_TO_CODE[stripped];
+
+  // Last resort: check if any known state name is a substring
+  for (const [name, code] of Object.entries(STATE_NAME_TO_CODE)) {
+    if (v.includes(name)) return code;
+  }
+
   return null;
 }
 
