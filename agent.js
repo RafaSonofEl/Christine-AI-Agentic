@@ -59,7 +59,7 @@ async function callAnthropic(messages) {
       max_tokens: MAX_TOKENS,
       system: SYSTEM_PROMPT,
       tools: TOOLS,
-      tool_choice: { type: "any" },  
+      tool_choice: { type: "auto" },  
       messages
     })
   });
