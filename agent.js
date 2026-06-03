@@ -35,13 +35,13 @@ const TOOL_EXECUTORS = {
   check_unit_availability: executeCheckUnitAvailability
 };
 
-function executeTool(toolUse) {
+async function executeTool(toolUse) {
   const fn = TOOL_EXECUTORS[toolUse.name];
   if (!fn) {
     return { error: `Unknown tool: ${toolUse.name}` };
   }
   try {
-    return fn(toolUse.input || {});
+    return await fn(toolUse.input || {});
   } catch (e) {
     return { error: `Tool execution failed: ${String(e)}` };
   }
@@ -97,13 +97,15 @@ export async function runTurn(history, userText, { onToolStart } = {}) {
     if (data.stop_reason === "tool_use") {
       if (onToolStart) onToolStart(); // UI hook: "let me pull that up"
 
-      const toolResults = data.content
-        .filter((b) => b.type === "tool_use")
-        .map((toolUse) => ({
-          type: "tool_result",
-          tool_use_id: toolUse.id,
-          content: JSON.stringify(executeTool(toolUse))
-        }));
+      const toolResults = await Promise.all(
+        data.content
+          .filter((b) => b.type === "tool_use")
+          .map(async (toolUse) => ({
+            type: "tool_result",
+            tool_use_id: toolUse.id,
+            content: JSON.stringify(await executeTool(toolUse))
+          }))
+        );
 
       history.push({ role: "user", content: toolResults });
       hops += 1;
