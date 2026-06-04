@@ -59,7 +59,7 @@ async function callAnthropic(messages) {
       max_tokens: MAX_TOKENS,
       system: SYSTEM_PROMPT,
       tools: TOOLS,
-      tool_choice: { type: "auto" },  
+      tool_choice: { type: "auto" },
       messages
     })
   });
@@ -77,6 +77,68 @@ function textFromContent(content) {
     .map((b) => b.text)
     .join("")
     .trim();
+}
+
+// ─────────────────────── CONTEXT EXTRACTION HELPERS ─────────────────────────
+// These derive qualification fields from the running conversation so lead tags
+// can fire a personalized SMS confirmation through the dispatcher → Worker.
+
+// Shared text extractor for a message's content (string or block array).
+// Named messageText (not userText) to avoid shadowing runTurn's userText param.
+function messageText(msg) {
+  return typeof msg.content === "string"
+    ? msg.content
+    : Array.isArray(msg.content)
+    ? msg.content.filter((b) => b.type === "text").map((b) => b.text).join(" ")
+    : "";
+}
+
+// Scans user-typed text (newest first) for a US phone number. The Worker
+// normalizes to E.164 and applies the allowlist, so this just finds digits.
+function extractPhone(history) {
+  const phoneRe = /(?:\+?1[\s\-.]?)?\(?\d{3}\)?[\s\-.]?\d{3}[\s\-.]?\d{4}/;
+  for (let i = history.length - 1; i >= 0; i--) {
+    const msg = history[i];
+    if (msg.role !== "user") continue;
+    const m = messageText(msg).match(phoneRe);
+    if (m) return m[0];
+  }
+  return null;
+}
+
+// Best-effort first-name capture from user self-introductions.
+function extractName(history) {
+  const nameRe = /\b(?:i'?m|i am|this is|my name is|it'?s)\s+([A-Z][a-z]{1,20})\b/;
+  for (let i = history.length - 1; i >= 0; i--) {
+    const msg = history[i];
+    if (msg.role !== "user") continue;
+    const m = messageText(msg).match(nameRe);
+    if (m) return m[1];
+  }
+  return null;
+}
+
+// Pulls the facility name from tool_result blocks (Cubby adapter returns
+// facility_name / facilities[].name). Most reliable source — the resolved
+// facility, not a guess from chat. Scans newest tool results first.
+function extractFacilityName(history) {
+  for (let i = history.length - 1; i >= 0; i--) {
+    const msg = history[i];
+    if (msg.role !== "user" || !Array.isArray(msg.content)) continue;
+    for (const block of msg.content) {
+      if (block.type !== "tool_result" || typeof block.content !== "string") continue;
+      try {
+        const parsed = JSON.parse(block.content);
+        if (parsed.facility_name) return parsed.facility_name;
+        if (Array.isArray(parsed.facilities) && parsed.facilities[0]?.name) {
+          return parsed.facilities[0].name;
+        }
+      } catch {
+        // non-JSON tool result; skip
+      }
+    }
+  }
+  return null;
 }
 
 // Runs one full customer turn, including any tool-use round trips.
@@ -105,7 +167,7 @@ export async function runTurn(history, userText, { onToolStart } = {}) {
             tool_use_id: toolUse.id,
             content: JSON.stringify(await executeTool(toolUse))
           }))
-        );
+      );
 
       history.push({ role: "user", content: toolResults });
       hops += 1;
@@ -119,7 +181,16 @@ export async function runTurn(history, userText, { onToolStart } = {}) {
 
   // Extract routing tag, strip it from customer-facing text, fire dispatcher.
   const { tag, clean } = extractRouting(finalText);
-  const dispatch = runToolsForRouting(tag, {}); // ctx can carry qualification fields later
+
+  // Build context for the dispatcher. contact_phone enables the SMS
+  // confirmation on lead tags; name and facility personalize the message.
+  const ctx = {
+    contact_phone: extractPhone(history),
+    contact_name: extractName(history),
+    facility_name: extractFacilityName(history)
+  };
+
+  const dispatch = await runToolsForRouting(tag, ctx);
 
   return {
     reply: clean || "I'm sorry, I had trouble responding just now. Please try again.",
