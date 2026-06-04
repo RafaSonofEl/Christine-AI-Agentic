@@ -22,14 +22,10 @@ const MODEL = "claude-haiku-4-5-20251001";
 const MAX_TOKENS = 600;
 const MAX_TOOL_HOPS = 4; // safety cap on tool-use round trips per turn
 
-// Compiled once at module load. Promotions are evaluated at compile time;
-// if you toggle a promo and want it live without reload, call compilePrompt()
-// again and pass the result into createAgent.
 const SYSTEM_PROMPT = compilePrompt();
 
 const TOOLS = [lookupLocationDataTool, checkUnitAvailabilityTool];
 
-// Maps a tool name to its executor. Add tools here as the framework grows.
 const TOOL_EXECUTORS = {
   lookup_location_data: executeLookupLocationData,
   check_unit_availability: executeCheckUnitAvailability
@@ -80,8 +76,8 @@ function textFromContent(content) {
 }
 
 // ─────────────────────── CONTEXT EXTRACTION HELPERS ─────────────────────────
-// These derive qualification fields from the running conversation so lead tags
-// can fire a personalized SMS confirmation through the dispatcher → Worker.
+// Derive qualification fields from the running conversation so lead tags can
+// fire a personalized SMS confirmation and a HubSpot CRM lead via the dispatcher.
 
 // Shared text extractor for a message's content (string or block array).
 // Named messageText (not userText) to avoid shadowing runTurn's userText param.
@@ -93,14 +89,25 @@ function messageText(msg) {
     : "";
 }
 
-// Scans user-typed text (newest first) for a US phone number. The Worker
-// normalizes to E.164 and applies the allowlist, so this just finds digits.
+// Scans user-typed text (newest first) for a US phone number.
 function extractPhone(history) {
   const phoneRe = /(?:\+?1[\s\-.]?)?\(?\d{3}\)?[\s\-.]?\d{3}[\s\-.]?\d{4}/;
   for (let i = history.length - 1; i >= 0; i--) {
     const msg = history[i];
     if (msg.role !== "user") continue;
     const m = messageText(msg).match(phoneRe);
+    if (m) return m[0];
+  }
+  return null;
+}
+
+// Scans user-typed text (newest first) for an email address.
+function extractEmail(history) {
+  const emailRe = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+  for (let i = history.length - 1; i >= 0; i--) {
+    const msg = history[i];
+    if (msg.role !== "user") continue;
+    const m = messageText(msg).match(emailRe);
     if (m) return m[0];
   }
   return null;
@@ -119,8 +126,7 @@ function extractName(history) {
 }
 
 // Pulls the facility name from tool_result blocks (Cubby adapter returns
-// facility_name / facilities[].name). Most reliable source — the resolved
-// facility, not a guess from chat. Scans newest tool results first.
+// facility_name / facilities[].name). Most reliable source. Newest first.
 function extractFacilityName(history) {
   for (let i = history.length - 1; i >= 0; i--) {
     const msg = history[i];
@@ -142,8 +148,6 @@ function extractFacilityName(history) {
 }
 
 // Runs one full customer turn, including any tool-use round trips.
-// `history` is the running messages array (role/content). It is mutated and
-// returned so the caller persists conversation memory.
 export async function runTurn(history, userText, { onToolStart } = {}) {
   history.push({ role: "user", content: userText });
 
@@ -153,11 +157,10 @@ export async function runTurn(history, userText, { onToolStart } = {}) {
   while (hops <= MAX_TOOL_HOPS) {
     const data = await callAnthropic(history);
 
-    // Persist the assistant turn (text + any tool_use blocks) into memory.
     history.push({ role: "assistant", content: data.content });
 
     if (data.stop_reason === "tool_use") {
-      if (onToolStart) onToolStart(); // UI hook: "let me pull that up"
+      if (onToolStart) onToolStart();
 
       const toolResults = await Promise.all(
         data.content
@@ -171,10 +174,9 @@ export async function runTurn(history, userText, { onToolStart } = {}) {
 
       history.push({ role: "user", content: toolResults });
       hops += 1;
-      continue; // loop back for the model's next step
+      continue;
     }
 
-    // Normal completion.
     finalText = textFromContent(data.content);
     break;
   }
@@ -182,10 +184,11 @@ export async function runTurn(history, userText, { onToolStart } = {}) {
   // Extract routing tag, strip it from customer-facing text, fire dispatcher.
   const { tag, clean } = extractRouting(finalText);
 
-  // Build context for the dispatcher. contact_phone enables the SMS
-  // confirmation on lead tags; name and facility personalize the message.
+  // Build context. A lead is only pushed to CRM if it has phone OR email
+  // (enforced in the dispatcher); name and facility personalize the message.
   const ctx = {
     contact_phone: extractPhone(history),
+    contact_email: extractEmail(history),
     contact_name: extractName(history),
     facility_name: extractFacilityName(history)
   };
