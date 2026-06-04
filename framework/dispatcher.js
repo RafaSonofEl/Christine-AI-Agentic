@@ -1,19 +1,20 @@
 // Framework: self-storage-regional-operator
-// FROZEN action layer. Five simulated tools + runToolsForRouting(tag) switch.
-// Tools console-log in the demo. In production each is a real integration
-// (CRM create, callback scheduler, team alert, CRM log, escalation flag).
+// Action layer. Five simulated tools + runToolsForRouting(tag) switch, plus a
+// real SMS confirmation (via the Cloudflare Worker /sms route) on lead tags.
 //
 // Deliberate asymmetry (the "judgment over conversion" principle):
-//   - Emergencies and billing/lien disputes NEVER fire createLead.
+//   - Emergencies and billing/lien disputes NEVER fire createLead or SMS.
 //   - Security and account issues route to humans, not to a sales callback.
-//   - Only genuine lead intents create leads and schedule sales callbacks.
+//   - Only genuine lead intents create leads, schedule callbacks, and text.
 
 import { isValidTag, DEFAULT_FALLBACK_TAG } from "./routing.js";
 
-// ---- The five simulated tools -------------------------------------------
-// Each returns a small record so a caller (or a Team View UI) can show
-// "Actions Taken" without re-deriving anything.
+const SMS_ENDPOINT = "https://christine-proxy.prods-balustre-0h.workers.dev/sms";
 
+// Tags that should trigger a customer SMS confirmation.
+const SMS_LEAD_TAGS = new Set(["RES_HOT", "RES_WARM", "VEHICLE", "BUSINESS"]);
+
+// ---- The five simulated tools -------------------------------------------
 export const tools = {
   createLead(payload = {}) {
     console.log("[AGENT] create_lead", payload);
@@ -37,13 +38,35 @@ export const tools = {
   }
 };
 
-// ---- Per-tag tool combinations ------------------------------------------
-// Each entry is a function returning the array of fired tool records, so the
-// combination is explicit and testable per tag. Context (location, storage
-// type, etc.) can be passed through for richer payloads.
+// Real integration: SMS confirmation via the Worker (which holds Twilio secrets).
+async function sendSmsConfirmation(ctx = {}) {
+  try {
+    const res = await fetch(SMS_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to_phone: ctx.contact_phone,
+        contact_name: ctx.contact_name,
+        facility_name: ctx.facility_name
+      })
+    });
+    const result = await res.json();
+    console.log("[AGENT] send_sms_confirmation", result);
+    return { tool: "send_sms_confirmation", ...result };
+  } catch (e) {
+    const err = {
+      tool: "send_sms_confirmation",
+      source: "twilio",
+      status: "error",
+      error: `SMS request failed: ${String(e)}`
+    };
+    console.warn("[AGENT]", err);
+    return err;
+  }
+}
 
+// ---- Per-tag tool combinations ------------------------------------------
 const ROUTING_ACTIONS = {
-  // LEAD TAGS — these create leads and may schedule sales callbacks.
   RES_HOT: (ctx) => [
     tools.createLead({ tag: "RES_HOT", ...ctx }),
     tools.scheduleCallback({ priority: "high" }),
@@ -67,23 +90,19 @@ const ROUTING_ACTIONS = {
     tools.logToCRM({ note: "business/commercial" })
   ],
 
-  // ESCALATION TAGS — note the asymmetry. No createLead on emergency or billing.
   ESCALATE_EMERGENCY: (ctx) => [
     tools.flagEscalation({ type: "emergency", ...ctx }),
     tools.sendTeamAlert({ reason: "urgent, possible 911 situation" }),
     tools.scheduleCallback({ priority: "same-day" })
-    // intentionally no createLead, no logToCRM sales note
   ],
   ESCALATE_SECURITY: (ctx) => [
     tools.flagEscalation({ type: "security", ...ctx }),
     tools.sendTeamAlert({ reason: "security: break-in/theft/lockout" }),
     tools.logToCRM({ note: "security event logged" })
-    // no createLead — a break-in is not a sales opportunity
   ],
   ESCALATE_BILLING: (ctx) => [
     tools.flagEscalation({ type: "billing/lien", ...ctx }),
     tools.sendTeamAlert({ reason: "billing/legal, route to trained staff" })
-    // no createLead — a lien dispute is not a lead
   ],
   ESCALATE_SCOPE: (ctx) => [
     tools.flagEscalation({ type: "out of scope", ...ctx }),
@@ -93,15 +112,14 @@ const ROUTING_ACTIONS = {
   ESCALATE_ACCOUNT: (ctx) => [
     tools.flagEscalation({ type: "account verification", ...ctx }),
     tools.sendTeamAlert({ reason: "needs identity/account verification" })
-    // no createLead — existing customer account action, not a new lead
   ]
 };
 
 // ---- The dispatcher ------------------------------------------------------
-// Validates the tag against routing.js, falls back conservatively if needed,
-// fires the combination, and returns a record for the Team View / Activity Log.
+// Now async: lead tags additionally fire a real SMS confirmation through the
+// Worker. The synchronous simulated tools run exactly as before.
 
-export function runToolsForRouting(tag, ctx = {}) {
+export async function runToolsForRouting(tag, ctx = {}) {
   let resolvedTag = tag;
 
   if (!resolvedTag || !isValidTag(resolvedTag)) {
@@ -112,6 +130,12 @@ export function runToolsForRouting(tag, ctx = {}) {
   }
 
   const fired = ROUTING_ACTIONS[resolvedTag](ctx);
+
+  // Lead tags also send a real (or mock-fallback) SMS confirmation.
+  if (SMS_LEAD_TAGS.has(resolvedTag) && ctx.contact_phone) {
+    const smsResult = await sendSmsConfirmation(ctx);
+    fired.push(smsResult);
+  }
 
   return {
     tag: resolvedTag,
