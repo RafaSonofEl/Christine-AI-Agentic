@@ -1,4 +1,4 @@
-// Framework: self-storage-regional-operator 
+// Framework: self-storage-regional-operator
 // Action layer. Five simulated tools + runToolsForRouting(tag) switch, plus two
 // real integrations on QUALIFIED lead tags: a mock SMS confirmation and a
 // HubSpot CRM lead — both routed through the Cloudflare Worker (which holds all
@@ -8,10 +8,11 @@
 // one piece of reachable contact info (phone OR email). A name-only "lead" is
 // not actionable and would clutter the pipeline, so it is logged and skipped.
 //
-// Deliberate asymmetry (the "judgment over conversion" principle):
-//   - Emergencies and billing/lien disputes NEVER fire createLead, SMS, or CRM.
-//   - Security and account issues route to humans, not to a sales callback.
-//   - Only genuine, reachable lead intents create leads, text, and CRM records.
+// FIX (2026-06-04): contact info supplied in natural language (e.g.
+// "my email is fred@gmail.com, name is fred") was not being parsed into
+// ctx.contact_email / ctx.contact_phone, so qualified leads were wrongly
+// skipped or sent to HubSpot with empty properties (→ 400). We now recover
+// email/phone from the transcript before the qualification check.
 
 import { isValidTag, DEFAULT_FALLBACK_TAG } from "./routing.js";
 
@@ -21,6 +22,43 @@ const HUBSPOT_ENDPOINT = `${WORKER_BASE}/hubspot`;
 
 // Tags that represent genuine leads -> SMS confirmation + HubSpot contact.
 const LEAD_TAGS = new Set(["RES_HOT", "RES_WARM", "VEHICLE", "BUSINESS"]);
+
+// ---- Contact-info extraction --------------------------------------------
+const EMAIL_RE = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/;
+// US phone: optional +1, then 10 digits with common separators.
+const PHONE_RE = /(?:\+?1[\s.\-]?)?\(?\d{3}\)?[\s.\-]?\d{3}[\s.\-]?\d{4}\b/;
+
+function collectText(ctx) {
+  // Prefer a structured transcript; fall back to single message fields.
+  if (Array.isArray(ctx.transcript)) {
+    return ctx.transcript
+      .map((m) => (typeof m === "string" ? m : m?.content || m?.text || ""))
+      .join("\n");
+  }
+  return [ctx.message, ctx.user_message, ctx.last_message]
+    .filter(Boolean)
+    .join("\n");
+}
+
+// Recovers email/phone from free text when structured fields are missing.
+// Never overwrites a value that was already explicitly provided.
+function extractContactInfo(ctx = {}) {
+  const out = { ...ctx };
+  if (!out.contact_email || !out.contact_phone) {
+    const text = collectText(ctx);
+    if (text) {
+      if (!out.contact_email) {
+        const m = text.match(EMAIL_RE);
+        if (m) out.contact_email = m[0].toLowerCase();
+      }
+      if (!out.contact_phone) {
+        const m = text.match(PHONE_RE);
+        if (m) out.contact_phone = m[0];
+      }
+    }
+  }
+  return out;
+}
 
 // ---- The five simulated tools -------------------------------------------
 export const tools = {
@@ -153,19 +191,21 @@ export async function runToolsForRouting(tag, ctx = {}) {
     resolvedTag = DEFAULT_FALLBACK_TAG;
   }
 
-  const fired = ROUTING_ACTIONS[resolvedTag](ctx);
+  // Recover email/phone from the transcript BEFORE qualification, so a lead
+  // that supplied contact info in natural language is no longer skipped.
+  const enrichedCtx = extractContactInfo(ctx);
+
+  const fired = ROUTING_ACTIONS[resolvedTag](enrichedCtx);
 
   // Lead tags fire real integrations — but only for a QUALIFIED lead, i.e. one
-  // that includes at least one piece of contact info (phone or email). A lead
-  // with only a name is not actionable and would clutter the CRM, so we skip it
-  // and log the decision for visibility / dogfooding.
+  // that includes at least one piece of contact info (phone or email).
   if (LEAD_TAGS.has(resolvedTag)) {
-    const hasContact = Boolean(ctx.contact_phone || ctx.contact_email);
+    const hasContact = Boolean(enrichedCtx.contact_phone || enrichedCtx.contact_email);
 
     if (hasContact) {
       const [smsResult, hsResult] = await Promise.all([
-        ctx.contact_phone ? sendSmsConfirmation(ctx) : Promise.resolve(null),
-        createHubspotLead(ctx, resolvedTag)
+        enrichedCtx.contact_phone ? sendSmsConfirmation(enrichedCtx) : Promise.resolve(null),
+        createHubspotLead(enrichedCtx, resolvedTag)
       ]);
       if (smsResult) fired.push(smsResult);
       fired.push(hsResult);
