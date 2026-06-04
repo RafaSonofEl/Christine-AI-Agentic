@@ -1,18 +1,26 @@
 // Framework: self-storage-regional-operator
-// Action layer. Five simulated tools + runToolsForRouting(tag) switch, plus a
-// real SMS confirmation (via the Cloudflare Worker /sms route) on lead tags.
+// Action layer. Five simulated tools + runToolsForRouting(tag) switch, plus two
+// real integrations on QUALIFIED lead tags: a mock SMS confirmation and a
+// HubSpot CRM lead — both routed through the Cloudflare Worker (which holds all
+// secrets).
+//
+// Lead quality rule: a lead is only pushed to the CRM if it carries at least
+// one piece of reachable contact info (phone OR email). A name-only "lead" is
+// not actionable and would clutter the pipeline, so it is logged and skipped.
 //
 // Deliberate asymmetry (the "judgment over conversion" principle):
-//   - Emergencies and billing/lien disputes NEVER fire createLead or SMS.
+//   - Emergencies and billing/lien disputes NEVER fire createLead, SMS, or CRM.
 //   - Security and account issues route to humans, not to a sales callback.
-//   - Only genuine lead intents create leads, schedule callbacks, and text.
+//   - Only genuine, reachable lead intents create leads, text, and CRM records.
 
 import { isValidTag, DEFAULT_FALLBACK_TAG } from "./routing.js";
 
-const SMS_ENDPOINT = "https://christine-proxy.prods-balustre-0h.workers.dev/sms";
+const WORKER_BASE = "https://christine-proxy.prods-balustre-0h.workers.dev";
+const SMS_ENDPOINT = `${WORKER_BASE}/sms`;
+const HUBSPOT_ENDPOINT = `${WORKER_BASE}/hubspot`;
 
-// Tags that should trigger a customer SMS confirmation.
-const SMS_LEAD_TAGS = new Set(["RES_HOT", "RES_WARM", "VEHICLE", "BUSINESS"]);
+// Tags that represent genuine leads -> SMS confirmation + HubSpot contact.
+const LEAD_TAGS = new Set(["RES_HOT", "RES_WARM", "VEHICLE", "BUSINESS"]);
 
 // ---- The five simulated tools -------------------------------------------
 export const tools = {
@@ -38,7 +46,7 @@ export const tools = {
   }
 };
 
-// Real integration: SMS confirmation via the Worker (which holds Twilio secrets).
+// Real integration: mock SMS confirmation via the Worker.
 async function sendSmsConfirmation(ctx = {}) {
   try {
     const res = await fetch(SMS_ENDPOINT, {
@@ -54,12 +62,31 @@ async function sendSmsConfirmation(ctx = {}) {
     console.log("[AGENT] send_sms_confirmation", result);
     return { tool: "send_sms_confirmation", ...result };
   } catch (e) {
-    const err = {
-      tool: "send_sms_confirmation",
-      source: "twilio",
-      status: "error",
-      error: `SMS request failed: ${String(e)}`
-    };
+    const err = { tool: "send_sms_confirmation", source: "twilio_mock", status: "error", error: `SMS request failed: ${String(e)}` };
+    console.warn("[AGENT]", err);
+    return err;
+  }
+}
+
+// Real integration: HubSpot CRM lead via the Worker.
+async function createHubspotLead(ctx = {}, tag) {
+  try {
+    const res = await fetch(HUBSPOT_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contact_name: ctx.contact_name,
+        contact_phone: ctx.contact_phone,
+        contact_email: ctx.contact_email,
+        facility_name: ctx.facility_name,
+        routing_tag: tag
+      })
+    });
+    const result = await res.json();
+    console.log("[AGENT] hubspot.create_lead", result);
+    return { tool: "hubspot.create_lead", ...result };
+  } catch (e) {
+    const err = { tool: "hubspot.create_lead", source: "hubspot", status: "error", error: `HubSpot request failed: ${String(e)}` };
     console.warn("[AGENT]", err);
     return err;
   }
@@ -116,9 +143,6 @@ const ROUTING_ACTIONS = {
 };
 
 // ---- The dispatcher ------------------------------------------------------
-// Now async: lead tags additionally fire a real SMS confirmation through the
-// Worker. The synchronous simulated tools run exactly as before.
-
 export async function runToolsForRouting(tag, ctx = {}) {
   let resolvedTag = tag;
 
@@ -131,10 +155,29 @@ export async function runToolsForRouting(tag, ctx = {}) {
 
   const fired = ROUTING_ACTIONS[resolvedTag](ctx);
 
-  // Lead tags also send a real (or mock-fallback) SMS confirmation.
-  if (SMS_LEAD_TAGS.has(resolvedTag) && ctx.contact_phone) {
-    const smsResult = await sendSmsConfirmation(ctx);
-    fired.push(smsResult);
+  // Lead tags fire real integrations — but only for a QUALIFIED lead, i.e. one
+  // that includes at least one piece of contact info (phone or email). A lead
+  // with only a name is not actionable and would clutter the CRM, so we skip it
+  // and log the decision for visibility / dogfooding.
+  if (LEAD_TAGS.has(resolvedTag)) {
+    const hasContact = Boolean(ctx.contact_phone || ctx.contact_email);
+
+    if (hasContact) {
+      const [smsResult, hsResult] = await Promise.all([
+        ctx.contact_phone ? sendSmsConfirmation(ctx) : Promise.resolve(null),
+        createHubspotLead(ctx, resolvedTag)
+      ]);
+      if (smsResult) fired.push(smsResult);
+      fired.push(hsResult);
+    } else {
+      const skipped = {
+        tool: "lead_skipped",
+        reason: "no contact info (phone/email) captured",
+        tag: resolvedTag
+      };
+      console.warn("[AGENT]", skipped);
+      fired.push(skipped);
+    }
   }
 
   return {
