@@ -1,4 +1,4 @@
-# Christine AI — Architecture & Implementation Plan
+# Christine AI - Architecture & Implementation Plan
 
 ## 1. Overview
 
