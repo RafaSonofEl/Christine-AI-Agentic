@@ -1,4 +1,4 @@
-// Framework: self-storage-regional-operator 
+// Framework: self-storage-regional-operator
 // Integration layer. Compiles the system prompt at init, runs the Anthropic
 // Messages API with tool use (via a Cloudflare Worker proxy), resolves the
 // location lookup loop, then extracts the routing tag and dispatches the
@@ -113,14 +113,18 @@ function extractEmail(history) {
   return null;
 }
 
-// Best-effort first-name capture from user self-introductions.
+// Best-effort name capture from user self-introductions.
+// Handles: "my name is X", "my first name is X", "my last name is X",
+// "my full name is X", "my first and last name is X", "my name's X",
+// "name: X", "name is X", "the name is X", "this is X", "it's X",
+// "I'm X", "I am X", "call me X". Case-insensitive. Captures 1–4 name tokens.
 function extractName(history) {
-  const nameRe = /\b(?:i'?m|i am|this is|my name is|it'?s)\s+([A-Z][a-z]{1,20})\b/;
+  const nameRe = /\b(?:my\s+(?:first\s+(?:and\s+last\s+)?|last\s+|full\s+)?name(?:'s|\s+is)|(?:the\s+)?name(?:\s+is|[:\-])|this\s+is|it'?s|i'?m|i\s+am|call\s+me)\s+([A-Za-z][A-Za-z'\-]{1,20}(?:\s+[A-Za-z][A-Za-z'\-]{1,20}){0,3})/i;
   for (let i = history.length - 1; i >= 0; i--) {
     const msg = history[i];
     if (msg.role !== "user") continue;
     const m = messageText(msg).match(nameRe);
-    if (m) return m[1];
+    if (m) return m[1].trim().replace(/[.,;!?]+$/, "");
   }
   return null;
 }
