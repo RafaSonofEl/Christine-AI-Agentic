@@ -119,12 +119,20 @@ function extractEmail(history) {
 // "name: X", "name is X", "the name is X", "this is X", "it's X",
 // "I'm X", "I am X", "call me X". Case-insensitive. Captures 1–4 name tokens.
 function extractName(history) {
-  const nameRe = /\b(?:my\s+(?:first\s+(?:and\s+last\s+)?|last\s+|full\s+)?name(?:'s|\s+is)|(?:the\s+)?name(?:\s+is|[:\-])|this\s+is|it'?s|i'?m|i\s+am|call\s+me)\s+([A-Za-z][A-Za-z'\-]{1,20}(?:\s+[A-Za-z][A-Za-z'\-]{1,20}){0,3})/i;
+  const nameRe = /\b(?:my\s+(?:first\s+(?:and\s+last\s+)?|last\s+|full\s+)?name(?:'s|\s+is)|(?:the\s+)?name(?:\s+is|[:\-])|this\s+is|it'?s|i'?m|i\s+am|call\s+me)\s+([A-Za-z][A-Za-z'\-]{1,20}(?:\s+[A-Za-z][A-Za-z'\-]{1,20}){0,2})/i;
   for (let i = history.length - 1; i >= 0; i--) {
     const msg = history[i];
     if (msg.role !== "user") continue;
-    const m = messageText(msg).match(nameRe);
-    if (m) return m[1].trim().replace(/[.,;!?]+$/, "");
+    const text = messageText(msg);
+    const m = text.match(nameRe);
+    if (!m) continue;
+    // Trim trailing tokens that are clearly not name parts.
+    const stopWords = new Set(["and", "my", "our", "the", "email", "phone", "number", "at", "is"]);
+    const tokens = m[1].trim().replace(/[.,;!?]+$/, "").split(/\s+/);
+    while (tokens.length > 1 && stopWords.has(tokens[tokens.length - 1].toLowerCase())) {
+      tokens.pop();
+    }
+    return tokens.join(" ");
   }
   return null;
 }
